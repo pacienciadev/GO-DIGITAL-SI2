@@ -4,78 +4,82 @@ import Models.Usuario;
 
 import javax.swing.*;
 import java.awt.*;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.sql.SQLException;
-import java.util.Scanner;
 
 public class HomeView extends JFrame {
-    public static void main(String[] args) throws SQLException {
-        HomeView janela = new HomeView();
+    private JLabel lblEmail;
+    private JLabel lblPassword;
+    private JTextField txtEmail;
+    private JPasswordField pwdPassword;
+    private JButton btnLogin;
 
-        janela.setLayout(new FlowLayout());
-        janela.setSize(300,300);
-        janela.setVisible(true);
+    Usuario usu = new Usuario();
 
-//        //Inicializando a JLabel para o nome
-//        lblNomeUsuario = new JLabel("Insira seu nome:");
-//        //adicionando a JLabel
-//        add(lblNomeUsuario);
-//        //Inicializando a caixa de texto com largura para 10 caracteres
-//        txtNomeUsuario = new JTextField(10);
-//        //incluindo a caixa de texto na nossa janela
-//        add(txtNomeUsuario);
+    public HomeView() {
+        super("Área do Usuário");
 
+        this.setLayout(new GridBagLayout());
+        this.setSize(250,200);
 
+        lblEmail = new JLabel("Digite seu E-mail: ");
+        lblPassword = new JLabel("Digite sua Senha: ");
 
+        txtEmail = new JTextField(10);
+        pwdPassword = new JPasswordField(10);
 
+        btnLogin = new JButton("Entrar");
 
+        Handler handler = new Handler();
+        pwdPassword.addActionListener(handler);
+        btnLogin.addActionListener(handler);
 
+        GridBagConstraints posicoes = new GridBagConstraints();
+        posicoes.insets = new Insets(3,0,3,0);
+        posicoes.anchor = posicoes.LINE_START;
+        posicoes.gridx = 0;
+        posicoes.gridy = 0;
+        add(lblEmail, posicoes);
+        posicoes.gridx = 1;
+        posicoes.gridy = 0;
+        add(txtEmail, posicoes);
+        posicoes.gridx = 0;
+        posicoes.gridy = 1;
+        add(lblPassword, posicoes);
+        posicoes.gridx = 1;
+        posicoes.gridy = 1;
+        add(pwdPassword, posicoes);
+        posicoes.gridx = 0;
+        posicoes.gridy = 2;
+        add(btnLogin, posicoes);
 
+    }
 
+    public class Handler implements ActionListener {
+        @Override
+        public void actionPerformed(ActionEvent evento) {
+            Usuario usu = new Usuario();
 
+            UsuarioDAO dao = new UsuarioDAO();
 
+            try {
+                usu = dao.loginUsuario(txtEmail.getText(), pwdPassword.getText());
 
+                if(usu.getNome() != null){
+                    JOptionPane.showMessageDialog(null, "Usuário ou senha incorreto");
+                } else {
+                    JOptionPane.showMessageDialog(null, "Login realizado, bem-vindo " + usu.getNome());
+                }
 
-
-
-
-
-
-        Scanner numero = new Scanner(System.in);
-        Scanner texto = new Scanner(System.in);
-
-        Usuario usu = new Usuario();
-
-        usu.setId(5);
-//        usu.setNome(JOptionPane.showInputDialog(null, "Digite o nome do usuário: ", "GO-DIGITAL-SI2", JOptionPane.INFORMATION_MESSAGE));
-        usu.setEmail("joao2@fiap.com.br");
-        usu.setDocumento("1154545845");
-        usu.setDataNascimento("1990-06-23");
-        usu.setSenha("myPassPass123");
-
-        UsuarioDAO dao = new UsuarioDAO();
-
-        System.out.println("Digite 1 para cadastrar\n2 para alterar\n3 para excluir\n4 para consultar: ");
-        int opcao = numero.nextInt();
-
-        if(opcao == 1) {
-            dao.cadastrarUsuario(usu);
-            System.out.println("Cadastro efetuado com sucesso");
-        }
-        else if(opcao == 3) {
-            System.out.println("Digite o id do contato");
-            int id = numero.nextInt();
-            System.out.println("Deseja realmente excluir o contato?");
-            String resp = texto.nextLine();
-            if(resp.equals("Sim")) {
-                dao.excluirUsuario(id);
-                System.out.println("Contato excluido com sucesso");
+            } catch (SQLException e) {
+                throw new RuntimeException(e);
             }
         }
-        else if(opcao == 4) {
-            System.out.println("Digite o id do contato");
-            int id = numero.nextInt();
-            usu = dao.buscarUsuarioPorId(id);
-            System.out.println("Nome:" + usu.getNome() + " email: "+ usu.getEmail());
-        }
+    }
+    public static void main(String[] args) {
+        HomeView janela = new HomeView();
+        janela.setDefaultCloseOperation(EXIT_ON_CLOSE);
+        janela.setVisible(true);
     }
 }

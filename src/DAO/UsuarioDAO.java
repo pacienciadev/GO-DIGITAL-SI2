@@ -147,4 +147,35 @@ public class UsuarioDAO {
 
         return listaUsuarios;
     }
+
+    public Usuario loginUsuario(String email, String senha) throws SQLException {
+        Usuario usu = new Usuario();
+
+        conn = ConnectionFactory.getConnection();
+        PreparedStatement cmdSql = null;
+
+        try {
+            cmdSql = conn.prepareStatement("Select * from tbl_usu where emi_usu = ? AND sen_usu = ?");
+
+            cmdSql.setString(1, email);
+            cmdSql.setString(2, senha);
+
+            ResultSet dados = cmdSql.executeQuery();
+
+            if(dados.next()){
+                usu.setId(dados.getInt(1));
+                usu.setNome(dados.getString(2));
+                usu.setDocumento(dados.getString(3));
+                usu.setDataNascimento(dados.getString(4));
+                usu.setEmail(dados.getString(5));
+            }
+
+            conn.close();
+            cmdSql.close();
+        } catch (SQLException err){
+            err.printStackTrace();
+        }
+
+        return usu;
+    }
 }
