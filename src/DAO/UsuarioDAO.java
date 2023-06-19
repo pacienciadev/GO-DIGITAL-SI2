@@ -70,7 +70,7 @@ public class UsuarioDAO {
         PreparedStatement cmdSql = null;
 
         try {
-            cmdSql = conn.prepareStatement("DELETE FROM TBL_USU WHERE ID=?");
+            cmdSql = conn.prepareStatement("DELETE FROM TBL_USU WHERE ID_USU=?");
 
             cmdSql.setInt(1, id);
 
@@ -78,8 +78,6 @@ public class UsuarioDAO {
 
             conn.close();
             cmdSql.close();
-
-            System.out.println("\nUsuário excluído com sucesso!");
         }
         catch (SQLException err){
             err.printStackTrace();
