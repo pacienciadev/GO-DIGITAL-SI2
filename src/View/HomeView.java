@@ -1,4 +1,5 @@
 package View;
+
 import DAO.UsuarioDAO;
 import Models.Usuario;
 
@@ -68,16 +69,18 @@ public class HomeView extends JFrame {
                     JOptionPane.showMessageDialog(null, "Login realizado, bem-vindo");
 
                     janela.setVisible(false);
-                    dispose(); //Destroy the JFrame object
+                    dispose();
 
-                    System.out.println("==============================================\n"
-                            +"Bem-vindo ao sistema - Go Digital Challenge"
-                            +"\n==============================================");
-
-                    crudSystem();
+                    SwingUtilities.invokeLater(() -> {
+                        try {
+                            CrudView crudView = new CrudView();
+                            crudView.setVisible(true);
+                        } catch (SQLException e) {
+                            e.printStackTrace();
+                        }
+                    });
                 } else {
                     JOptionPane.showMessageDialog(null, "Usuário ou senha incorretos");
-
                     System.out.println("\nVocê não tem permissão para acessar o sistema, sessão encerrada!");
                     System.exit(0);
                 }
@@ -88,43 +91,123 @@ public class HomeView extends JFrame {
         }
     }
 
-    public void crudSystem() throws SQLException {
-        Scanner numero = new Scanner(System.in);
-        Scanner texto = new Scanner(System.in);
+    public class CrudView extends JFrame {
+        private Scanner numero = new Scanner(System.in);
+        private Scanner texto = new Scanner(System.in);
+        private UsuarioDAO dao = new UsuarioDAO();
+        private Usuario usu = new Usuario();
 
-        Usuario usu = new Usuario();
-        UsuarioDAO dao = new UsuarioDAO();
+        public CrudView() throws SQLException {
+            super("Sistema de CRUD");
 
-        System.out.println("Digite uma das opções: \n1 - Para cadastrar um novo usuário\n2 - Para alterar um usuário\n3 - Para excluir um usuário\n4 - Para consultar um usuário existente:\n5 - Para sair ");
-        int opcao = numero.nextInt();
+            setDefaultCloseOperation(EXIT_ON_CLOSE);
+            setSize(600, 400);
+            setLayout(new FlowLayout());
 
-        if(opcao == 1) {
-            usu.setId(10);
-            usu.setNome("Rafael Teste Eduardo");
-            usu.setEmail("meu@email.com");
-            usu.setDocumento("4466633377");
-            usu.setDataNascimento("1990-12-31");
-            usu.setSenha("myTest");
+            JButton btnCreate = new JButton("Cadastrar Usuário");
+            JButton btnUpdate = new JButton("Atualizar Usuário");
+            JButton btnDelete = new JButton("Excluir Usuário");
+            JButton btnSearch = new JButton("Consultar Usuário");
 
-            dao.cadastrarUsuario(usu);
-            System.out.println("\nCadastro efetuado com sucesso\n\n");
+            add(btnCreate);
+            add(btnUpdate);
+            add(btnDelete);
+            add(btnSearch);
+
+            btnCreate.addActionListener(e -> cadastrarUsuario());
+            btnUpdate.addActionListener(e -> atualizarUsuario());
+            btnDelete.addActionListener(e -> excluirUsuario());
+            btnSearch.addActionListener(e -> consultarUsuario());
         }
-        else if(opcao == 3) {
-            System.out.println("Digite o id do contato");
-            int id = numero.nextInt();
-            System.out.println("Deseja realmente excluir o usuário?\n(Digite 'S' ou 's' para excluir)");
-            String resp = texto.nextLine();
-            if(resp.equals("S") || resp.equals("s")) {
-                dao.excluirUsuario(id);
-                System.out.println("\nUsuário excluído com sucesso\n\n");
+
+        private void cadastrarUsuario() {
+            String nome = "";
+            String email = "";
+            String Document = "";
+            String Nascimento = "";
+            String Senha = "";
+
+            while (nome.isEmpty()) {
+                nome = JOptionPane.showInputDialog(null, "Digite o nome do usuário:");
+            }
+
+            while (email.isEmpty()) {
+                email = JOptionPane.showInputDialog(null, "Digite o email do usuário:");
+            }
+
+            while (Document.isEmpty()) {
+                Document = JOptionPane.showInputDialog(null, "Digite o Documento do usuário:");
+            }
+
+            while (Nascimento.isEmpty()) {
+                Nascimento = JOptionPane.showInputDialog(null, "Digite a data de nascimento do usuário:");
+            }
+
+            while (Senha.isEmpty()) {
+                Senha = JOptionPane.showInputDialog(null, "Digite a senha do usuário:");
+            }
+
+            usu.setId(10);
+            usu.setNome(nome);
+            usu.setEmail(email);
+            usu.setDocumento(Document);
+            usu.setDataNascimento(Nascimento);
+            usu.setSenha(Senha);
+
+            try  {
+                dao.cadastrarUsuario(usu);
+                System.out.println("\nCadastro efetuado com sucesso\n\n");
+                JOptionPane.showMessageDialog(null, "Usuário cadastrado com sucesso!");
+            }
+            catch (Exception ex)
+            {
+                System.out.println(ex);
+            }
+        }
+
+        private void atualizarUsuario() {
+            int id = Integer.parseInt(JOptionPane.showInputDialog(null, "Digite o ID do usuário a ser atualizado:"));
+
+            //JOptionPane.showMessageDialog(null, "Usuário atualizado com sucesso!");
+        }
+
+        private void excluirUsuario() {
+            int id = Integer.parseInt(JOptionPane.showInputDialog(null, "Digite o ID do usuário a ser excluído:"));
+
+            int confirmResult = JOptionPane.showConfirmDialog(
+                    null,
+                    "Deseja realmente excluir o usuário?",
+                    "Confirmação de Exclusão",
+                    JOptionPane.YES_NO_OPTION
+            );
+
+            if(confirmResult == JOptionPane.YES_OPTION) {
+
+                try{
+                    dao.excluirUsuario(id);
+                    System.out.println("\nUsuário excluído com sucesso\n\n");
+                    JOptionPane.showMessageDialog(null, "Usuário excluído com sucesso!");
+                }
+                catch (Exception ex)
+                {
+                    System.out.println(ex);
+                }
             }else{
                 System.out.println("\nA ação no foi efetivada!\n");
             }
         }
-        else if(opcao == 4) {
-            System.out.println("Digite o id do contato");
-            int id = numero.nextInt();
-            usu = dao.buscarUsuarioPorId(id);
+
+        private void consultarUsuario() {
+            int id = Integer.parseInt(JOptionPane.showInputDialog(null, "Digite o ID do usuário a ser consultado:"));
+
+            try{
+                usu = dao.buscarUsuarioPorId(id);
+            }
+            catch (Exception ex)
+            {
+                System.out.println(ex);
+            }
+
             if(usu.getNome()==null){
                 System.out.println("\n\n USUÁRIO INEXISTENTE NA BASE \n\n");
             } else {
@@ -136,14 +219,19 @@ public class HomeView extends JFrame {
                         +"\nData de nascimento: "+ usu.getDataNascimento()
                         +"\n**************************************\n\n");
             }
-        }
-        else if(opcao == 5){
-            System.out.println("\n\n OBRIGADO POR UTILIZAR NOSSO SISTEMA! \n\n");
 
-            System.exit(0);
-        }
+            if (usu.getNome() == null) {
+                JOptionPane.showMessageDialog(null, "Usuário não encontrado na base de dados.");
+            } else {
+                String userInfo = "ID: " + usu.getId() + "\n"
+                        + "Nome: " + usu.getNome() + "\n"
+                        + "E-mail: " + usu.getEmail() + "\n"
+                        + "Documento: " + usu.getDocumento() + "\n"
+                        + "Data de Nascimento: " + usu.getDataNascimento() + "\n";
 
-        crudSystem();
+                JOptionPane.showMessageDialog(null, userInfo, "Informações do Usuário", JOptionPane.INFORMATION_MESSAGE);
+            }
+        }
     }
 
     public static void main(String[] args) {
